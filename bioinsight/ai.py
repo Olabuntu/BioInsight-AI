@@ -1,72 +1,81 @@
-"""AI-assisted interpretation of analysis results.
+"""Interpretation stage — turn numbers into plain-English insight.
 
-v0.1.0 ships a deterministic, rule-based interpreter so the tool works with
-zero configuration and no API keys. The function signature is intentionally
-LLM-shaped (``interpret_gwas`` takes a result and returns prose) so a real
-language-model backend can be slotted in behind the same interface later.
+v0 ships a deterministic, rule-based interpreter so the tool works with zero
+configuration and no API keys. The function is intentionally LLM-shaped
+(``interpret`` takes a summary and returns prose) so a real language-model
+backend can be slotted in behind the same interface later.
 """
 
 from __future__ import annotations
 
-from .gwas import GENOME_WIDE_THRESHOLD, GwasResult
+from .registry import Stage, method, planned
 
 
-def interpret_gwas(result: GwasResult) -> str:
-    """Return a plain-English interpretation of a GWAS result."""
+@method(
+    Stage.REPORT,
+    "interpret",
+    "AI-assisted interpretation",
+    description="Plain-English summary of the result (rule-based; no API key "
+    "required). Pluggable with an LLM backend in future.",
+    aliases=("ai", "insight"),
+)
+def interpret(summary) -> str:
+    """Return a plain-English interpretation of a GWAS summary."""
     lines: list[str] = []
+    res = summary.primary
 
     lines.append(
-        f"This GWAS tested {result.n_snps:,} variants across "
-        f"{len(result.chromosomes)} chromosome(s)."
+        f"This GWAS tested {summary.n_snps:,} variants across "
+        f"{summary.n_chromosomes} chromosome(s), with significance called by "
+        f"the {res.label}."
     )
 
-    if result.n_significant > 0:
-        lead = result.top_hits.iloc[0]
+    if res.n_significant > 0:
+        lead = summary.top_hits.iloc[0]
         lines.append(
-            f"{result.n_significant} variant(s) reached genome-wide "
-            f"significance (p ≤ {result.threshold:g}). The strongest "
-            f"association is {lead['snp']} on chromosome {lead['chr']} "
-            f"(p = {lead['p']:.2e}), a strong candidate for follow-up."
-        )
-    elif result.n_suggestive > 0:
-        lines.append(
-            f"No variant passed the genome-wide threshold, but "
-            f"{result.n_suggestive} reached suggestive significance "
-            f"(p ≤ 1e-5). These may be worth replicating in a larger "
-            f"cohort before drawing conclusions."
+            f"{res.n_significant} variant(s) were declared significant. The "
+            f"strongest association is {lead['snp']} on chromosome "
+            f"{lead['chr']} (p = {lead['p']:.2e}), a strong candidate for "
+            f"follow-up and replication."
         )
     else:
         lines.append(
-            "No variant reached suggestive or genome-wide significance. "
-            "This often indicates limited statistical power (small sample "
-            "size) rather than the absence of any true effect."
+            "No variant passed the chosen significance criterion. This often "
+            "reflects limited statistical power (small sample size) rather than "
+            "the absence of any true effect — consider a larger cohort or a "
+            "less conservative method (e.g. FDR)."
         )
 
-    # Genomic inflation interpretation.
-    lam = result.lambda_gc
+    lam = summary.lambda_gc
     if lam < 1.05:
         lines.append(
-            f"The genomic inflation factor (λ = {lam:.3f}) is close to "
-            f"1.0, suggesting well-calibrated statistics with little evidence "
-            f"of population stratification or systematic bias."
+            f"The genomic inflation factor (λ = {lam:.3f}) is close to 1.0, "
+            f"suggesting well-calibrated statistics with little evidence of "
+            f"population stratification or systematic bias."
         )
     elif lam < 1.2:
         lines.append(
-            f"The genomic inflation factor (λ = {lam:.3f}) is mildly "
-            f"elevated. Some inflation is present; consider adjusting for "
-            f"principal components or relatedness."
+            f"The genomic inflation factor (λ = {lam:.3f}) is mildly elevated; "
+            f"consider adjusting for principal components or relatedness."
         )
     else:
         lines.append(
-            f"The genomic inflation factor (λ = {lam:.3f}) is high, "
-            f"which points to substantial confounding (e.g. population "
-            f"stratification). Interpret hits with caution and re-run with "
-            f"appropriate covariates."
+            f"The genomic inflation factor (λ = {lam:.3f}) is high, pointing to "
+            f"substantial confounding (e.g. population stratification). "
+            f"Interpret hits cautiously and re-run with appropriate covariates."
         )
 
     return "\n".join(lines)
 
 
 def is_llm_available() -> bool:
-    """Placeholder hook for a future LLM backend. Always False in v0.1.0."""
+    """Placeholder hook for a future LLM backend. Always False for now."""
     return False
+
+
+planned(
+    Stage.REPORT,
+    "pdf",
+    "PDF report",
+    description="Typeset PDF report bundling plots, tables, and interpretation.",
+)
