@@ -85,6 +85,18 @@ Plot written to:   bioinsight_report/manhattan.png
 Plot written to:   bioinsight_report/qq.png
 ```
 
+### Example output
+
+Manhattan plot — chromosomes laid end to end, with the chosen significance
+threshold drawn in:
+
+![Manhattan plot](docs/img/manhattan.png)
+
+QQ plot — observed vs. expected −log₁₀(p) with the genomic inflation factor (λ).
+Most markers track the null line; true signals depart upward:
+
+![QQ plot](docs/img/qq.png)
+
 ## Picking methods and parameters
 
 List everything and its status:

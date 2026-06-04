@@ -23,6 +23,7 @@ htmlcov/
 bioinsight_report/
 *.png
 !examples/*.png
+!docs/img/*.png
 
 # Editors / OS
 .vscode/
