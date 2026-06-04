@@ -27,7 +27,7 @@ publication-ready visualizations and plain-English, AI-assisted summaries.
 
 ```bash
 # From source (recommended during alpha)
-git clone https://github.com/abhisheksahu/BioInsight-AI.git
+git clone https://github.com/Olabuntu/BioInsight-AI.git
 cd BioInsight-AI
 pip install -e .
 ```
