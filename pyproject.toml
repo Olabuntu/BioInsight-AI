@@ -9,7 +9,7 @@ description = "A modular GWAS pipeline — pick the tools you need (loaders, mod
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
-authors = [{ name = "Abhishek Sahu", email = "asahu@salud.unm.edu" }]
+authors = [{ name = "OLABUNTU Babatunde Afeez", email = "olabuntubabatunde@gmail.com" }]
 keywords = ["bioinformatics", "gwas", "genomics", "omics", "visualization"]
 classifiers = [
     "Development Status :: 3 - Alpha",

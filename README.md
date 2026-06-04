@@ -155,7 +155,7 @@ pytest        # includes validation against statsmodels
 
 ## License
 
-[MIT](LICENSE) © 2026 Abhishek Sahu
+[MIT](LICENSE) © 2026 OLABUNTU Babatunde Afeez
 
 ---
 
